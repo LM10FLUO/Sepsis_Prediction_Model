@@ -109,7 +109,25 @@ class DataPreprocessor:
 
         return True
 
+# Dataset class to enable batch processing of tensors via torch.utils.data.DataLoader
+class SepsisDataset(Dataset):
 
+    def __init__(self, input_dir: str) -> None:
+        self.input_dir = Path(input_dir)
+        self.input_files = sorted(self.input_dir.glob("*.pt"))
+
+    # Returns number of files
+    def __len__(self) -> int:
+        return len(self.input_files)
+
+    # Returns a single tensor
+    def __getitem__(self, index: int) -> tuple:
+        file_path = self.input_files[index]
+
+        # Load the tensor dictionary stored and return the feature and target stored
+        data = torch.load(file_path)
+        return data["x"], data["y"]
+        
             
         
         
