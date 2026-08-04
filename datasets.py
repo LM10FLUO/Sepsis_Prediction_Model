@@ -95,7 +95,7 @@ class DataPreprocessor:
         # Parallelise the process_single_file function across the max cores available (max_workers)
         
         with ProcessPoolExecutor(max_workers=max_workers) as executor:
-            conversion_success = executor.map(DataPreprocessor.process_single_file, file_args)
+            conversion_success = executor.map(_process_file_worker, file_args)
 
         for success in conversion_success:
 
@@ -103,7 +103,22 @@ class DataPreprocessor:
                 print("A file failed to process")
                 return False
 
+        print("Finished upload")
         return True
+
+        # for parameters in file_args:
+        #     success = DataPreprocessor.process_single_file(parameters)
+
+        #     if not success:
+        #         print("A file failed to process")
+        #         return False
+            
+        # return True
+
+# Standalone worker function at module level so background processes can find it
+def _process_file_worker(args):
+    input_path, output_dir, overwrite = args
+    return DataPreprocessor.process_single_file((input_path, output_dir, overwrite))
 
 # Dataset class to enable batch processing of tensors via torch.utils.data.DataLoader
 class SepsisDataset(Dataset):
