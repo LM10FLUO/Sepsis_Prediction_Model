@@ -81,11 +81,7 @@ class DataPreprocessor:
             return False
 
     @staticmethod
-    def batch_process_files(input_dir: str, output_dir: str, overwrite: bool, max_workers: int) -> bool:
-
-        # Convert directory strings into Path objects
-        input_dir = Path(input_dir)
-        output_dir = Path(output_dir)
+    def batch_process_files(input_dir: Path, output_dir: Path, overwrite: bool, max_workers: int) -> bool:
 
         # If the output directory does not exist, create a new directory
         output_dir.mkdir(parents=True, exist_ok=True)
