@@ -5,6 +5,7 @@ import torch
 from torch.utils.data import Dataset
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
+from tqdm import tqdm
 
 class DataPreprocessor:
 
@@ -93,9 +94,14 @@ class DataPreprocessor:
         file_args = [(input_path, output_dir, overwrite) for input_path in input_files]
 
         # Parallelise the process_single_file function across the max cores available (max_workers)
+        # Use tqdm to show live progress bar to user in terminal
         
         with ProcessPoolExecutor(max_workers=max_workers) as executor:
-            conversion_success = executor.map(_process_file_worker, file_args)
+            conversion_success = tqdm(
+                executor.map(_process_file_worker, file_args),
+                total=len(file_args),
+                desc="Converting .psv files into .pt files"
+            )
 
         for success in conversion_success:
 
