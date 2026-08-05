@@ -33,15 +33,7 @@ class DataPreprocessor:
         target_series = df["SepsisLabel"].shift(-hours_ahead)
         df["Target"] = target_series.ffill().fillna(0).astype(int)
 
-        # first_onset = df.loc[df["SepsisLabel"] == 1].iloc[[0]]
-        # df.drop(df[df["SepsisLabel"] == 1].index, inplace=True)
-        # pd.concat([df, first_onset], ignore_index=0) 
-
-        sepsis_indices = df.index[df["SepsisLabel"] == 1].to_list()
-
-        if sepsis_indices:
-            first_onset_index = sepsis_indices[0]
-            df = df.iloc[: first_onset_index + 1].copy()
+        df.drop(df[df["SepsisLabel"] == 1].index, inplace=True)
 
         return df
 
@@ -122,15 +114,15 @@ class DataPreprocessor:
         # return True
 
 # Standalone worker function at module level so background processes can find it
-def _process_file_worker(args):
+def _process_file_worker(args) -> bool:
     input_path, output_dir, overwrite = args
     return DataPreprocessor.process_single_file((input_path, output_dir, overwrite))
 
 # Dataset class to enable batch processing of tensors via torch.utils.data.DataLoader
 class SepsisDataset(Dataset):
 
-    def __init__(self, input_dir: str) -> None:
-        self.input_dir = Path(input_dir)
+    def __init__(self, input_dir: Path) -> None:
+        self.input_dir = input_dir
         self.input_files = sorted(self.input_dir.glob("*.pt"))
 
     # Returns number of files
