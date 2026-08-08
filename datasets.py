@@ -52,6 +52,11 @@ class DataPreprocessor:
             # Clean the chosen file
             df = pd.read_csv(input_path, sep="|")
             df_cleaned = DataPreprocessor.preprocessing(df=df, hours_ahead=12)
+
+            # Do not save empty cleaned patient records - i.e. patients who have sepsis on admission - to avoid errors
+            if len(df_cleaned) == 0:
+                print(f"{input_path.name} contains empty records")
+                return False
     
             # Separate the data into the input features and target outputs
             input_features = df_cleaned.drop(columns=["SepsisLabel", "Target"]).to_numpy()
