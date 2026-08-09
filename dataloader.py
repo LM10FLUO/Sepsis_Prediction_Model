@@ -32,6 +32,6 @@ def create_training_set() -> DataLoader:
     Dataset = SepsisDataset(input_dir)
 
     # Setup DataLoader to create batches for training the neural network model
-    DataLoaderInstance = DataLoader(Dataset, batch_size=32, shuffle=True,collate_fn=padding)
+    DataLoaderInstance = DataLoader(Dataset, batch_size=32, shuffle=True, collate_fn=padding)
 
     return DataLoaderInstance
