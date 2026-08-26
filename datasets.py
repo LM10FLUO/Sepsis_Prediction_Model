@@ -126,9 +126,12 @@ def _process_file_worker(args) -> bool:
 # Dataset class to enable batch processing of tensors via torch.utils.data.DataLoader
 class SepsisDataset(Dataset):
 
-    def __init__(self, input_dir: Path) -> None:
-        self.input_dir = input_dir
-        self.input_files = sorted(self.input_dir.glob("*.pt"))
+    def __init__(self, input_dir: Path = None, input_files = None ) -> None:
+        if input_dir or input_files:
+            self.input_dir = input_dir
+            self.input_files = input_files or sorted(self.input_dir.glob("*.pt"))
+        else:
+            raise ValueError("Must provide directory or list of input files")
 
     # Returns number of files
     def __len__(self) -> int:

@@ -29,9 +29,16 @@ def create_training_set() -> DataLoader:
     # Setup pytorch dataset with tensors
     home_dir = Path.home()
     input_dir = home_dir / "sepsis_training_files"
-    Dataset = SepsisDataset(input_dir)
+    TrainingSet = SepsisDataset(input_dir=input_dir)
 
     # Setup DataLoader to create batches for training the neural network model
-    DataLoaderInstance = DataLoader(Dataset, batch_size=32, shuffle=True, collate_fn=padding)
+    DataLoaderInstance = DataLoader(TrainingSet, batch_size=32, shuffle=True, collate_fn=padding)
+
+    return DataLoaderInstance
+
+def create_cv_set(cv_set) -> DataLoader:
+
+    CVSet = SepsisDataset(input_files=cv_set)
+    DataLoaderInstance = DataLoader(CVSet, batch_size=32, shuffle=True, collate_fn=padding)
 
     return DataLoaderInstance
