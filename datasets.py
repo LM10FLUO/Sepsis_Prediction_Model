@@ -133,6 +133,10 @@ class SepsisDataset(Dataset):
         else:
             raise ValueError("Must provide directory or list of input files")
 
+        norm_stats = torch.load("feature_norm_stats.pt")
+        self.mean = norm_stats["mean"]
+        self.std = norm_stats["std"]
+
     # Returns number of files
     def __len__(self) -> int:
         return len(self.input_files)
@@ -143,7 +147,12 @@ class SepsisDataset(Dataset):
 
         # Load the tensor dictionary stored and return the feature and target stored
         data = torch.load(file_path)
-        return data["x"], data["y"]
+
+        norm_features = (data["x"] - self.mean) / self.std
+        labels = data["y"]
+
+        # Normalise the features using z_score normalisation
+        return norm_features, labels
         
             
         

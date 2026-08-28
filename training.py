@@ -8,6 +8,7 @@ from sklearn.model_selection import train_test_split
 from pathlib import Path
 from modelling import display_loss
 import matplotlib.pyplot as plt
+from random import randint
 
 if __name__ == "__main__":
 
@@ -52,8 +53,12 @@ if __name__ == "__main__":
         train_running_loss = 0.0
         cv_running_loss = 0.0
 
+        random_training = randint(0, len(training_dataloader)-1)
+        random_cv = randint(0, len(cv_dataloader)-1)
+
         # Iterate through each batch in the data loader
         for i, (features, labels, lengths) in enumerate(training_dataloader):
+
             # Load features and labels onto the dedicated hardware device
             features, labels = features.to(device), labels.to(device).float()
 
@@ -66,17 +71,29 @@ if __name__ == "__main__":
             train_loss.backward()
             optimiser.step()
 
+            if i == random_training:
+                print("TRAINING\n")
+                print(f"{'Label':<8}{'Prediction':<12}")
+                for label, prob in zip(labels.tolist(), torch.sigmoid(outputs).squeeze(-1).tolist()):
+                    print(f"{label:<8.0f}{prob:<12.4f}")
+
             train_running_loss += train_loss.item()
 
         # sets the model in evaluation mode to test the cross validation set for generalisation of the model
         SepsisModel.eval()
 
         with torch.no_grad():
-            for i, (features, labels, lengths) in enumerate(cv_dataloader):
+            for j, (features, labels, lengths) in enumerate(cv_dataloader):
                 features, labels = features.to(device), labels.to(device).float()
 
                 outputs = SepsisModel(features, lengths)
                 cv_loss = loss_function(outputs.squeeze(-1), labels.squeeze(-1))
+
+                if j == random_cv:
+                    print("CROSS VALIDATION\n")
+                    print(f"{'Label':<8}{'Prediction':<12}")
+                    for label, prob in zip(labels.tolist(), torch.sigmoid(outputs).squeeze(-1).tolist()):
+                        print(f"{label:<8.0f}{prob:<12.4f}")
 
                 cv_running_loss += cv_loss.item()
 
@@ -84,6 +101,7 @@ if __name__ == "__main__":
         avg_cv_loss = cv_running_loss / len(cv_dataloader)
 
         print(f"Epoch [{epoch+1}/{num_epochs}], Training Loss: {avg_train_loss:.4f}, CV Loss: {avg_cv_loss:.4f}")
+        print("____________________________________________________________________")
         train_loss_history.append(avg_train_loss)
         cv_loss_history.append(avg_cv_loss)
 
