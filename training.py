@@ -9,6 +9,7 @@ from pathlib import Path
 from modelling import display_loss
 import matplotlib.pyplot as plt
 from random import randint
+from math import inf
 
 if __name__ == "__main__":
 
@@ -18,18 +19,19 @@ if __name__ == "__main__":
     testing_files = sorted(test_file_dir.glob("*.pt"))
 
     # Here we are going to use an 80/20 split for CV size to test size
-    cv_set, test_set = train_test_split(testing_files, test_size=0.2)
+    cv_set, test_set = train_test_split(testing_files, test_size=0.2, random_state=12)
 
     training_dataloader = create_training_set()
     cv_dataloader = create_cv_set(cv_set=cv_set)
 
     # The pos_weight is the ratio of negative to positive (0 / 1) examples in the dataset
     # This essentially helps to scale the number of sepsis onset cases to reduce imbalance in the dataset
-    pos_weight = 10.0
+    pos_weight = 3.0
     SepsisModel = PredictionModel(input_size=40,
                                   hidden_size=64,
                                   num_layers=1,
-                                  out_features=1
+                                  out_features=1,
+                                  dropout_prob=0.5
                                   )
 
     # Use GPU if available, else fall back to CPU usage and moves all model weights, params and buffers onto selected hardware
@@ -38,15 +40,26 @@ if __name__ == "__main__":
 
     # Apply weighting to loss function to scale the loss from incorrectly identifying sepsis cases
     loss_function = nn.BCEWithLogitsLoss(pos_weight=torch.tensor([pos_weight])).to(device)
-    optimiser = optim.Adam(SepsisModel.parameters(), lr=0.001)
+
+    # Use regularisation to help reduce overfitting
+    optimiser = optim.Adam(SepsisModel.parameters(), lr=0.0001, weight_decay=0.001)
 
     # Train the LSTM Model
 
     num_epochs = 100
+    epoch = 1
     train_loss_history = []
     cv_loss_history = []
+    early_stop = False
 
-    for epoch in range(num_epochs):
+    # If the CV loss shows consistent divergence, early stop training to save best general model
+    best_cv_loss = float(inf)
+    patience_counter = 0
+    max_patience = 15
+
+    while epoch <= num_epochs and not early_stop:
+
+        print(f"Epoch [{epoch}/{num_epochs}]")
 
         # Sets the model in training mode
         SepsisModel.train()
@@ -72,7 +85,7 @@ if __name__ == "__main__":
             optimiser.step()
 
             if i == random_training:
-                print("TRAINING\n")
+                print("\nTRAINING:\n")
                 print(f"{'Label':<8}{'Prediction':<12}")
                 for label, prob in zip(labels.tolist(), torch.sigmoid(outputs).squeeze(-1).tolist()):
                     print(f"{label:<8.0f}{prob:<12.4f}")
@@ -90,7 +103,7 @@ if __name__ == "__main__":
                 cv_loss = loss_function(outputs.squeeze(-1), labels.squeeze(-1))
 
                 if j == random_cv:
-                    print("CROSS VALIDATION\n")
+                    print("\nCROSS VALIDATION\n")
                     print(f"{'Label':<8}{'Prediction':<12}")
                     for label, prob in zip(labels.tolist(), torch.sigmoid(outputs).squeeze(-1).tolist()):
                         print(f"{label:<8.0f}{prob:<12.4f}")
@@ -100,10 +113,26 @@ if __name__ == "__main__":
         avg_train_loss = train_running_loss / len(training_dataloader)
         avg_cv_loss = cv_running_loss / len(cv_dataloader)
 
-        print(f"Epoch [{epoch+1}/{num_epochs}], Training Loss: {avg_train_loss:.4f}, CV Loss: {avg_cv_loss:.4f}")
+        # If the current state has a better cv loss than previously, save the current model state
+        if avg_cv_loss <= best_cv_loss:
+            best_cv_loss = avg_cv_loss
+            torch.save(SepsisModel.state_dict(), "best_model_checkpoint.pt")
+            patience_counter = 0
+
+        # If the cv loss diverges, check whether max_patience is reached for early stopping
+        else:
+            patience_counter += 1
+
+            if patience_counter >= max_patience:
+                early_stop = True
+                print(f"Early stopping at epoch {epoch+1}. Best CV loss: {best_cv_loss:.4f}")
+
+        print(f"Training Loss: {avg_train_loss:.4f}, CV Loss: {avg_cv_loss:.4f}\n")
         print("____________________________________________________________________")
         train_loss_history.append(avg_train_loss)
         cv_loss_history.append(avg_cv_loss)
+
+        epoch += 1
 
     display_loss(train_loss_history, "Training loss vs epochs")
     display_loss(cv_loss_history, "CV loss vs epochs")

@@ -13,9 +13,10 @@ short term memory ensures we can use previous data to influence future predictio
 
 class PredictionModel(nn.Module):
 
-    def __init__(self, input_size: int, hidden_size: int, num_layers: int, out_features: int) -> None:
+    def __init__(self, input_size: int, hidden_size: int, num_layers: int, out_features: int, dropout_prob: float) -> None:
         super().__init__()
         self.lstm = nn.LSTM(input_size=input_size, hidden_size=hidden_size, num_layers=num_layers, batch_first=True)
+        self.dropout = nn.Dropout(p=dropout_prob)
         self.fc1 = nn.Linear(in_features=hidden_size, out_features=out_features)
 
     def forward(self, x: torch.Tensor, lengths: torch.Tensor) -> torch.Tensor:
@@ -27,6 +28,7 @@ class PredictionModel(nn.Module):
 
         h_n_collection, (h_n, c_n) = self.lstm(x_packed)
         out = h_n[-1]
+        out = self.dropout(out)
         out = self.fc1(out)
 
         return out
