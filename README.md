@@ -44,13 +44,24 @@ To run the project and train and test the model yourself, please do the followin
 3. Run "training.py"
 4. Run "testing.py" which will produce a confusion matrix visualising the model's effectiveness on the test set
 
-# How to Use the Project
+## How to Use the Project
 
 To use the trained neural network, please ensure that any data used is in the .psv format used by the physionet training data and that this data is preprocessed using the mechanisms used in "datasets.py" - this can be done by instantiating the DataPreprocessor class and running the process_single_file method, providing the file arguments as a tuple (input_dir, output_dir and overwrite=True). Then provide the absolute file path to this cleaned file to "prediction.py" when run to obtain a probability for the likelihood of the patient to develop sepsis in the next 12h.
 
 # Credits
-Felix Luo :)
+
+**Project Leader** - Rajadithan Rajarajan
+
+**Code** - Felix Luo :)
 Github: https://github.com/LM10FLUO
+
+Visit https://docs.google.com/document/d/18kh7Cyw6vX_E6RGLTvC-Sfv3_J-Keb4ywRPwa_5_pFc/edit?usp=sharing for the full writeup, explaining the background and importance behind sepsis, detailing further information for the purpose of this project, credited to **Rajadithan Rajarajan**.
+
+
+
+
+
+
 
 
 
