@@ -36,9 +36,9 @@ def create_training_set() -> DataLoader:
 
     return DataLoaderInstance
 
-def create_cv_set(cv_set) -> DataLoader:
+def create_dataset(dataset) -> DataLoader:
 
-    CVSet = SepsisDataset(input_files=cv_set)
-    DataLoaderInstance = DataLoader(CVSet, batch_size=32, shuffle=True, collate_fn=padding)
+    Dataset = SepsisDataset(input_files=dataset)
+    DataLoaderInstance = DataLoader(Dataset, batch_size=32, shuffle=True, collate_fn=padding)
 
     return DataLoaderInstance

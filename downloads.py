@@ -19,7 +19,11 @@ if __name__ == "__main__":
     # Create cv set
     home_dir = Path.home()
 
-    input_dir = home_dir / "physionet.org" / "files" / "challenge-2019" / "1.0.0" / "training" / "training_setB"
-    output_dir = home_dir / "sepsis_cv_and_test_files"
+    input_dirA = home_dir / "physionet.org" / "files" / "challenge-2019" / "1.0.0" / "training" / "training_setA"
+    output_dirA = home_dir / "sepsis_training_files"
 
-    download_dataset(input_dir=input_dir, output_dir=output_dir)
+    input_dirB = home_dir / "physionet.org" / "files" / "challenge-2019" / "1.0.0" / "training" / "training_setB"
+    output_dirB = home_dir / "sepsis_cv_and_test_files"
+
+    download_dataset(input_dir=input_dirA, output_dir=output_dirA)
+    download_dataset(input_dir=input_dirB, output_dir=output_dirB)

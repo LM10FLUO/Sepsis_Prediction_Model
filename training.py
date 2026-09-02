@@ -1,4 +1,4 @@
-from dataloader import create_training_set, create_cv_set
+from dataloader import create_training_set, create_dataset
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -22,11 +22,11 @@ if __name__ == "__main__":
     cv_set, test_set = train_test_split(testing_files, test_size=0.2, random_state=12)
 
     training_dataloader = create_training_set()
-    cv_dataloader = create_cv_set(cv_set=cv_set)
+    cv_dataloader = create_dataset(dataset=cv_set)
 
     # The pos_weight is the ratio of negative to positive (0 / 1) examples in the dataset
     # This essentially helps to scale the number of sepsis onset cases to reduce imbalance in the dataset
-    pos_weight = 3.0
+    pos_weight = 10.0
     SepsisModel = PredictionModel(input_size=40,
                                   hidden_size=64,
                                   num_layers=1,
@@ -42,7 +42,7 @@ if __name__ == "__main__":
     loss_function = nn.BCEWithLogitsLoss(pos_weight=torch.tensor([pos_weight])).to(device)
 
     # Use regularisation to help reduce overfitting
-    optimiser = optim.Adam(SepsisModel.parameters(), lr=0.0001, weight_decay=0.001)
+    optimiser = optim.Adam(SepsisModel.parameters(), lr=0.00005, weight_decay=0.01)
 
     # Train the LSTM Model
 

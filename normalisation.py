@@ -6,7 +6,7 @@ def calc_mean_and_std() -> None:
 
     # Retrieve the directory storing preprocessed training tensors
     home_dir = Path.home()
-    training_dir = home_dir / "sepsis_training_files"
+    training_dir = home_dir / "sepsis_training_files_6h"
 
     all_rows = []
 
